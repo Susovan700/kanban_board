@@ -12,20 +12,9 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-
-const allowedOrigins = [
-  'http://localhost:3000', 
-  'https://kanban-board-pi-eight.vercel.app' 
-];
-
+// This version only looks for your local frontend on port 3000
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'http://localhost:3000', 
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true
 }));
@@ -39,10 +28,9 @@ connectDB().then(() => {
     createInitialBoard();
 });
 
-
 export const io = new Server(server, {
     cors: {
-        origin: allowedOrigins, 
+        origin: "http://localhost:3000", 
         methods: ["GET", "POST"]
     }
 });
@@ -55,7 +43,8 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 5000;
+// Fixed port for local development
+const PORT = 5000;
 server.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
