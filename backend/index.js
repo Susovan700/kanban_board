@@ -12,9 +12,21 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// This version only looks for your local frontend on port 3000
+// 1. Updated CORS to allow BOTH your laptop and Vercel
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'https://kanban-board-pi-eight.vercel.app'
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', 
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true
 }));
@@ -28,9 +40,10 @@ connectDB().then(() => {
     createInitialBoard();
 });
 
+// 2. Updated Socket.io to allow BOTH origins
 export const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000", 
+        origin: allowedOrigins, 
         methods: ["GET", "POST"]
     }
 });
@@ -43,8 +56,8 @@ io.on('connection', (socket) => {
     });
 });
 
-// Fixed port for local development
-const PORT = 5000;
+// 3. Updated PORT to work on Render (Render gives you a random port)
+const PORT = process.env.PORT || 5000; 
 server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
