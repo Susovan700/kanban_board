@@ -15,7 +15,7 @@ const server = http.createServer(app);
 // 1. Updated CORS to allow BOTH your laptop and Vercel
 const allowedOrigins = [
   'http://localhost:3000', 
-  'https://kanban-board-pi-eight.vercel.app'
+  'https://kanban-board-red-xi.vercel.app/'
 ];
 
 app.use(cors({
