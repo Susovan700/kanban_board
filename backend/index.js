@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import cors from 'cors'; // Keep this one!
+import cors from 'cors'; 
 import dotenv from 'dotenv';
 import connectDB from './Helper/ConnectDB.js';
 import boardRoutes from './Routes/BoardRoutes.js';
@@ -12,9 +12,20 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Use ONLY this CORS configuration
+
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'https://kanban-board-pi-eight.vercel.app' 
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true
 }));
@@ -28,9 +39,10 @@ connectDB().then(() => {
     createInitialBoard();
 });
 
+
 export const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000", // Better to match your frontend URL here too
+        origin: allowedOrigins, 
         methods: ["GET", "POST"]
     }
 });
@@ -45,5 +57,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
